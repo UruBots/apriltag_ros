@@ -125,8 +125,6 @@ void ContinuousDetector::imageCallback (
 
      try
     {
-      tag_detector_->drawDetections(cv_image_);
-
       // Convert to bgr8 for safety before publishing
       cv_bridge::CvImagePtr image_bgr;
       if (cv_image_->encoding != "bgr8")
@@ -138,7 +136,7 @@ void ContinuousDetector::imageCallback (
       {
         image_bgr = cv_image_;
       }
-
+      tag_detector_->drawDetections(cv_image_);
       tag_detections_image_publisher_.publish(image_bgr->toImageMsg());
     }
     catch (cv_bridge::Exception& e)
