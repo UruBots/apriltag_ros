@@ -122,8 +122,33 @@ void ContinuousDetector::imageCallback (
   // their payload values
   if (draw_tag_detections_image_)
   {
-    tag_detector_->drawDetections(cv_image_);
-    tag_detections_image_publisher_.publish(cv_image_->toImageMsg());
+
+     try
+    {
+      tag_detector_->drawDetections(cv_image_);
+
+      // Convert to bgr8 for safety before publishing
+      cv_bridge::CvImagePtr image_bgr;
+      if (cv_image_->encoding != "bgr8")
+      {
+        image_bgr = cv_bridge::cvtColor(cv_image_, "bgr8");
+        ROS_DEBUG("Image encoding converted to bgr8 before publishing.");
+      }
+      else
+      {
+        image_bgr = cv_image_;
+      }
+
+      tag_detections_image_publisher_.publish(image_bgr->toImageMsg());
+    }
+    catch (cv_bridge::Exception& e)
+    {
+      ROS_ERROR("cv_bridge conversion error in image publishing: %s", e.what());
+    }
+    catch (std::exception& e)
+    {
+      ROS_ERROR("Exception during draw/publish tag detections image: %s", e.what());
+    }
   }
 }
 
